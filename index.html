@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lokasi Bibit</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1c2a1f;--mute:#5f6b62;--line:#dfe5dc;--green:#2f7d3e;--gold:#f4c542;--goldink:#3a2c00;--red:#c0392b;--redbg:#fbe5e2;--onG:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#121a14;--card:#1b261e;--ink:#eef3ee;--mute:#a4b1a7;--line:#2c3a2f;--green:#6fcf82;--redbg:#3d1f1b;--red:#ff8a7a;--onG:#0c1a0f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;gap:12px;align-items:center;position:sticky;top:0;z-index:5}
+h1{font-size:22px;margin:0;line-height:1.15}
+.sub{color:var(--mute);font-size:16px}
+main{max-width:900px;margin:0 auto;padding:14px 14px 100px}
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:0 14px}
+.search:focus-within{border-color:var(--green)}
+.search input{flex:1;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:20px;padding:15px 0;min-width:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px}
+.chip{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;padding:9px 16px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--green);border-color:var(--green);color:var(--onG)}
+.upd{color:var(--mute);font-size:15px;margin:10px 2px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;display:flex;flex-direction:column}
+.pic{position:relative;border-radius:14px;aspect-ratio:1/1;display:grid;place-items:center;font-size:64px;background:linear-gradient(160deg,#cfe8c9,#8fc78a)}
+.stok{position:absolute;top:8px;right:8px;background:var(--green);color:var(--onG);font-size:14px;font-weight:700;padding:4px 10px;border-radius:10px}
+.stok.out{background:var(--red);color:#fff}
+.nm{font-size:18px;margin:10px 2px 2px;min-height:2.6em}
+.pr{font-size:21px;font-weight:800;margin:2px}
+.loc{margin-top:10px;background:var(--gold);color:var(--goldink);border-radius:14px;padding:10px 8px;text-align:center;font-weight:800;font-size:19px;line-height:1.2}
+.loc small{display:block;font-weight:600;font-size:14px;margin-top:2px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:11px 14px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn.pri{background:var(--green);color:var(--onG)}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.btn.del{background:var(--redbg);color:var(--red)}
+.card .btn{margin-top:8px}
+.empty{text-align:center;padding:40px 10px;color:var(--mute);font-size:19px}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);display:flex;gap:10px;justify-content:center;flex-wrap:wrap;z-index:6}
+dialog{border:0;border-radius:20px;padding:18px;width:min(460px,92vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-weight:700;margin:12px 0 4px}
+.f{width:100%;font:inherit;padding:11px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.blk{display:flex;gap:8px;margin-top:8px}.blk .f{flex:1;min-width:0}
+.acts{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}.acts .btn{flex:1}
+.emo{display:flex;gap:6px;flex-wrap:wrap}
+.emo button{font-size:26px;border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:2px 8px;cursor:pointer}
+.emo button.on{border-color:var(--green)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:9}
+</style>
+</head>
+<body>
+<header>
+  <div id="logo" style="flex:none"></div>
+  <div><h1 id="shopname">Kebun Bibitku</h1><div class="sub" id="shoptag"></div></div>
+</header>
+<main>
+  <div class="search"><span aria-hidden="true">🔍</span><input id="q" type="search" placeholder="Cari tanaman..." autocomplete="off"></div>
+  <div class="chips" id="chips"></div>
+  <div class="upd" id="upd"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden></div>
+</main>
+<div class="bar" id="bar" hidden></div>
+
+<dialog id="dlg">
+  <h2 id="dt" style="margin:0 0 4px">Ubah Tanaman</h2>
+  <label>Nama tanaman</label><input class="f" id="fn">
+  <div class="row2">
+    <div><label>Blok</label><input class="f" id="fb" placeholder="mis. Blok A"></div>
+    <div><label>Baris / patokan</label><input class="f" id="fr" placeholder="mis. Baris 3"></div>
+  </div>
+  <div class="row2">
+    <div><label>Harga (Rp)</label><input class="f" id="fp" inputmode="numeric"></div>
+    <div><label>Stok</label><select class="f" id="fs"><option value="1">Ada</option><option value="0">Habis</option></select></div>
+  </div>
+  <label>Gambar</label><div class="emo" id="emo"></div>
+  <div class="acts"><button class="btn pri" id="ok">Simpan</button><button class="btn ghost" id="cancel">Batal</button><button class="btn del" id="rm">Hapus</button></div>
+</dialog>
+
+<dialog id="dlgb">
+  <h2 style="margin:0 0 4px">Kelola Blok</h2>
+  <div class="sub">Ubah nama, tambah, atau hapus blok.</div>
+  <div id="blklist"></div>
+  <div class="acts"><button class="btn ghost" id="addb">+ Tambah Blok</button></div>
+  <div class="acts"><button class="btn pri" id="okb">Simpan</button><button class="btn ghost" id="cancelb">Batal</button></div>
+</dialog>
+
+<dialog id="dlgs">
+  <h2 style="margin:0 0 4px">Identitas Toko</h2>
+  <label>Nama toko</label><input class="f" id="sn">
+  <label>Keterangan di bawah nama</label><input class="f" id="st">
+  <label>Logo (satu emoji, kosongkan untuk logo daun)</label><input class="f" id="sl" maxlength="4" placeholder="mis. 🌱">
+  <div class="acts"><button class="btn pri" id="oks">Simpan</button><button class="btn ghost" id="cancels">Batal</button></div>
+</dialog>
+
+<dialog id="dlgl">
+  <h2 style="margin:0 0 4px">Masuk Admin</h2>
+  <label>Kata sandi</label><input class="f" id="pw" type="password" autocomplete="current-password">
+  <div id="lerr" style="color:var(--red);margin-top:8px"></div>
+  <div class="acts"><button class="btn pri" id="okl">Masuk</button><a class="btn ghost" href="/">Batal</a></div>
+</dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const ADMIN=location.pathname.replace(/\/$/,'')==='/admin';
+const LOGO='<svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="21" fill="none" stroke="#7a2f2f" stroke-width="2.5"/><path d="M23 36V22M23 22c-1-7-6-9-10-8 0 5 4 9 10 8zM23 25c1-6 6-8 10-7 0 5-4 8-10 7z" fill="#2f7d3e"/></svg>';
+const EMO=['🥑','🥭','🍊','🍋','🍎','🍇','🍌','🍍','🥥','🍈','🍐','🌳'];
+let D=null,isOwner=false,dirty=false,block='Semua',cur=null,emoji='🌳',bd=[],pw='';
+try{pw=localStorage.getItem('adminpw')||''}catch(e){}
+const rp=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+
+function render(){
+  if(!D)return;
+  const q=$('q').value.trim().toLowerCase();
+  const blocks=['Semua',...D.blocks];
+  if(!blocks.includes(block))block='Semua';
+  $('chips').innerHTML=blocks.map(b=>`<button class="chip ${b===block?'on':''}" data-b="${esc(b)}">${esc(b)}</button>`).join('');
+  $('upd').textContent='Lokasi diperbarui: '+D.updated;
+  $('shopname').textContent=D.shop.name;$('shoptag').textContent=D.shop.tagline;
+  $('logo').innerHTML=D.shop.logo?`<span style="font-size:40px;line-height:46px;display:block">${esc(D.shop.logo)}</span>`:LOGO;
+  document.title='Lokasi Bibit - '+D.shop.name+(ADMIN?' (Admin)':'');
+  const list=D.items.filter(i=>(block==='Semua'||i.block===block)&&(!q||(i.name+' '+i.block+' '+i.row).toLowerCase().includes(q)));
+  $('grid').innerHTML=list.map(i=>`<div class="card">
+    <div class="pic">${esc(i.emoji||'🌳')}<span class="stok ${i.stock>0?'':'out'}">${i.stock>0?'Stok: Ada':'Habis'}</span></div>
+    <div class="nm">${esc(i.name)}</div><div class="pr">${rp(i.price)}</div>
+    <div class="loc">📍 ${esc(i.block||'-')}<small>${esc(i.row||'')}</small></div>
+    ${isOwner?`<button class="btn ghost" data-e="${esc(i.id)}">✏️ Ubah</button>`:''}</div>`).join('');
+  $('empty').hidden=list.length>0;
+  $('empty').innerHTML='Tanaman tidak ditemukan.<br>Silakan tanya petugas kebun. 🙏';
+  const bar=$('bar');bar.hidden=!isOwner;
+  if(isOwner)bar.innerHTML=`<button class="btn ghost" id="add">+ Tambah Tanaman</button><button class="btn ghost" id="blk">🗂️ Kelola Blok</button><button class="btn ghost" id="shop">🏪 Identitas Toko</button><button class="btn pri" id="save" ${dirty?'':'disabled style="opacity:.5"'}>Simpan &amp; Terbitkan</button><a class="btn ghost" href="/">Lihat Halaman Pembeli</a><button class="btn ghost" id="out">Keluar</button>`;
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.b){block=t.dataset.b;render();}
+  else if(t.dataset.e)openEd(D.items.find(i=>i.id===t.dataset.e));
+  else if(t.id==='add')openEd(null);
+  else if(t.id==='blk')openBlk();
+  else if(t.id==='shop')openShop();
+  else if(t.id==='save')publish();
+  else if(t.id==='out'){try{localStorage.removeItem('adminpw')}catch(e){}location.href='/';}
+  else if(t.id==='okl')doLogin();
+  else if(t.dataset.rb!==undefined){bd.splice(+t.dataset.rb,1);drawBlk();}
+  else if(t.id==='addb'){bd.push({orig:null,name:''});drawBlk();const x=$('blklist').querySelectorAll('input');x[x.length-1].focus();}
+  else if(t.id==='okb')saveBlk();
+  else if(t.id==='cancelb')$('dlgb').close();
+  else if(t.id==='oks'){D.shop={name:$('sn').value.trim()||'Toko Saya',tagline:$('st').value.trim(),logo:$('sl').value.trim()};dirty=true;$('dlgs').close();render();}
+  else if(t.id==='cancels')$('dlgs').close();
+  else if(t.dataset.em){emoji=t.dataset.em;drawEmo();}
+});
+$('q').addEventListener('input',render);
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+function drawEmo(){$('emo').innerHTML=EMO.map(x=>`<button data-em="${x}" class="${x===emoji?'on':''}">${x}</button>`).join('');}
+function openEd(it){
+  cur=it;$('dt').textContent=it?'Ubah Tanaman':'Tambah Tanaman';
+  $('fn').value=it?.name||'';$('fb').value=it?it.block:(block!=='Semua'?block:'');$('fr').value=it?.row||'';
+  $('fp').value=it?.price??'';$('fs').value=(it?it.stock>0:true)?'1':'0';emoji=it?.emoji||'🌳';drawEmo();
+  $('rm').style.display=it?'':'none';$('dlg').showModal();
+}
+$('cancel').onclick=()=>$('dlg').close();
+$('ok').onclick=()=>{
+  const v={name:$('fn').value.trim(),block:$('fb').value.trim(),row:$('fr').value.trim(),price:parseInt($('fp').value)||0,stock:$('fs').value==='1'?1:0,emoji};
+  if(!v.name){alert('Nama tanaman harus diisi');return;}
+  if(v.block&&!D.blocks.includes(v.block))D.blocks.push(v.block);
+  if(cur)Object.assign(cur,v);else D.items.unshift({id:'p'+Date.now().toString(36),...v});
+  dirty=true;$('dlg').close();render();
+};
+$('rm').onclick=()=>{if(confirm('Hapus '+cur.name+'?')){D.items=D.items.filter(i=>i!==cur);dirty=true;$('dlg').close();render();}};
+
+function drawBlk(){$('blklist').innerHTML=bd.map((b,i)=>`<div class="blk"><input class="f" data-i="${i}" value="${esc(b.name)}" placeholder="mis. Blok D"><button class="btn del" data-rb="${i}">Hapus</button></div>`).join('');}
+$('blklist').addEventListener('input',e=>{const i=e.target.dataset.i;if(i!==undefined)bd[+i].name=e.target.value;});
+function openBlk(){bd=D.blocks.map(n=>({orig:n,name:n}));drawBlk();$('dlgb').showModal();}
+function saveBlk(){
+  const names=bd.map(b=>b.name.trim()).filter(Boolean);
+  if(new Set(names).size!==names.length){alert('Ada nama blok yang sama');return;}
+  const kept=bd.filter(b=>b.orig&&b.name.trim()).map(b=>b.orig);
+  const gone=D.blocks.filter(o=>!kept.includes(o));
+  const n=D.items.filter(i=>gone.includes(i.block)).length;
+  if(n&&!confirm(n+' tanaman ada di blok yang dihapus. Lokasinya akan dikosongkan. Lanjutkan?'))return;
+  bd.forEach(b=>{const nn=b.name.trim();if(b.orig&&nn&&nn!==b.orig)D.items.forEach(i=>{if(i.block===b.orig)i.block=nn;});});
+  D.items.forEach(i=>{if(gone.includes(i.block))i.block='';});
+  D.blocks=names;dirty=true;$('dlgb').close();render();
+}
+function openShop(){$('sn').value=D.shop.name;$('st').value=D.shop.tagline;$('sl').value=D.shop.logo||'';$('dlgs').showModal();}
+
+async function post(body){
+  const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let j={};try{j=await r.json()}catch(e){}
+  return {ok:r.ok,status:r.status,error:j.error};
+}
+function askLogin(msg){$('lerr').textContent=msg||'';$('pw').value='';if(!$('dlgl').open)$('dlgl').showModal();$('pw').focus();}
+async function doLogin(){
+  const p=$('pw').value;if(!p)return;
+  const r=await post({password:p,check:true});
+  if(r.ok){pw=p;try{localStorage.setItem('adminpw',p)}catch(e){}$('dlgl').close();isOwner=true;render();}
+  else $('lerr').textContent=r.error||'Gagal masuk';
+}
+async function publish(){
+  D.updated=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+  const r=await post({password:pw,data:D});
+  if(r.ok){dirty=false;toast('Tersimpan ✔');render();}
+  else if(r.status===401){isOwner=false;render();askLogin('Kata sandi salah, masuk lagi');}
+  else toast('Gagal menyimpan: '+(r.error||'coba lagi'));
+}
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+
+(async()=>{
+  try{
+    const r=await fetch('/api/data',{cache:'no-store'});
+    D=await r.json();if(D.error)throw new Error(D.error);
+  }catch(e){
+    $('empty').hidden=false;$('empty').textContent='Data belum bisa dimuat. Coba lagi nanti.';return;
+  }
+  render();
+  if(ADMIN){
+    if(pw){const r=await post({password:pw,check:true});if(r.ok){isOwner=true;render();return;}}
+    askLogin();
+  }
+})();
+</script>
+</body>
+</html>
